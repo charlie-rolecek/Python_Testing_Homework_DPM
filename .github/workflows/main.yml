@@ -27,3 +27,23 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run Pytest
         run: pytest tests/
+deploy:
+  needs: test
+  runs-on: ubuntu-latest
+  if: ${{ success() }}
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Set up Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Deploy code to Azure
+      run: |
+        az webapp up -n SMarren-CRolecek-PairProgramming -g DPM_homework8 --sku F1 --dryrun
+        az webapp up -n SMarren-CRolecek-PairProgramming -g DPM_homework8 --sku F1 --logs-path ./logs --verbose
+    if: ${{ always() }}
+    paths:
+      - static/**
+      - templates/**
+      - app.py
